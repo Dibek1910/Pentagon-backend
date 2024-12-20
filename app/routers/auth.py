@@ -5,11 +5,16 @@ from app.models import Customer
 from app.schemas import CustomerResponse
 from app.services.auth_service import verify_password
 from app.services.otp_service import generate_otp, store_otp, validate_stored_otp
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+class OTPRequest(BaseModel):
+    mobile_number: str
+
 @router.post("/generate-otp/")
-def generate_otp_for_auth(mobile_number: str):
+def generate_otp_for_auth(request: OTPRequest):
+    mobile_number = request.mobile_number
     if len(mobile_number) != 10 or not mobile_number.isdigit():
         raise HTTPException(status_code=400, detail="Invalid mobile number")
     otp = generate_otp()
@@ -18,8 +23,8 @@ def generate_otp_for_auth(mobile_number: str):
     return {"message": "OTP sent successfully"}
 
 @router.post("/validate-otp/")
-def validate_otp(mobile_number: str, otp: str):
-    if validate_stored_otp(mobile_number, otp):
+def validate_otp(request: OTPRequest, otp: str):
+    if validate_stored_otp(request.mobile_number, otp):
         return {"message": "OTP validated successfully"}
     raise HTTPException(status_code=400, detail="Invalid OTP")
 
