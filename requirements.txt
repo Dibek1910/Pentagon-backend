@@ -7,3 +7,4 @@ python-dotenv
 python-multipart
 aiofiles
 passlib[bcrypt]
+pydantic[email]
