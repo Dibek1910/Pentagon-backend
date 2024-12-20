@@ -3,12 +3,14 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Customer, Account
 from app.schemas import CustomerCreate, CustomerResponse
+from app.services.auth_service import hash_password
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
 @router.post("/", response_model=CustomerResponse)
 def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
-    db_customer = Customer(**customer.dict())
+    hashed_password = hash_password(customer.password)
+    db_customer = Customer(**customer.dict(exclude={"password"}), password=hashed_password)
     db.add(db_customer)
     db.commit()
     db.refresh(db_customer)
@@ -25,4 +27,3 @@ def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     db.refresh(db_customer)
 
     return db_customer
-
