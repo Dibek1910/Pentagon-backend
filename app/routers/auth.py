@@ -1,49 +1,77 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models import Customer
-from app.schemas import CustomerResponse
-from app.services.auth_service import verify_password
-from app.services.otp_service import generate_otp, store_otp, validate_stored_otp
+from fastapi import APIRouter, HTTPException
+from fastapi import Depends, FastAPI, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import logging
+from typing import Optional
+from database import SessionLocal, engine
+from models import Base, User
+from sqlalchemy.orm import Session
+from .otp_service import validate_stored_otp
 
-# Set up logging
-logging.basicConfig(level=logging.INFO)
+# Add this import
+from fastapi import HTTPException
+
 logger = logging.getLogger(__name__)
 
-router = APIRouter(prefix="/auth", tags=["Authentication"])
+router = APIRouter()
+
+Base.metadata.create_all(bind=engine)
+
+templates = Jinja2Templates(directory="templates")
 
 class OTPRequest(BaseModel):
     mobile_number: str
 
-@router.post("/generate-otp/")
-def generate_otp_for_auth(request: OTPRequest):
-    mobile_number = request.mobile_number
-    if len(mobile_number) != 10 or not mobile_number.isdigit():
-        raise HTTPException(status_code=400, detail="Invalid mobile number")
-    otp = generate_otp()
-    store_otp(mobile_number, otp)
-    
-    # Log the OTP (for debugging purposes only)
-    logger.info(f"Generated OTP for {mobile_number}: {otp}")
-    
-    # Here, send OTP using notification service (placeholder)
+@router.get("/")
+async def root():
+    return {"message": "Hello World"}
+
+# Dependency
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+@router.post("/send-otp/")
+async def send_otp(request: OTPRequest, db: Session = Depends(get_db)):
+    logger.info(f"Sending OTP to mobile number: {request.mobile_number}")
+    # Add your OTP sending logic here
     return {"message": "OTP sent successfully"}
+
 
 @router.post("/validate-otp/")
 def validate_otp(request: OTPRequest, otp: str):
+    logger.info(f"Validating OTP for mobile number: {request.mobile_number}")
     if validate_stored_otp(request.mobile_number, otp):
+        logger.info("OTP validated successfully")
         return {"message": "OTP validated successfully"}
+    logger.error("Invalid OTP")
     raise HTTPException(status_code=400, detail="Invalid OTP")
 
-@router.post("/signin/", response_model=CustomerResponse)
-def sign_in(account_id: int, password: str, db: Session = Depends(get_db)):
-    customer = db.query(Customer).filter(Customer.id == account_id).first()
-    if not customer:
-        raise HTTPException(status_code=404, detail="Account not found")
-    
-    if not verify_password(password, customer.password):
-        raise HTTPException(status_code=401, detail="Incorrect password")
-    
-    return customer
+@router.get("/items/{item_id}")
+async def read_item(item_id: int, q: Optional[str] = None):
+    return {"item_id": item_id, "q": q}
+
+@router.get("/users/me")
+async def read_users_me(request: Request, db: Session = Depends(get_db)):
+    return templates.TemplateResponse("index.html", {"request": request})
+
+@router.post("/users/")
+async def create_user(user: User, db: Session = Depends(get_db)):
+    db_user = User(**user.dict())
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+@router.get("/users/{user_id}")
+async def read_user(user_id: int, db: Session = Depends(get_db)):
+    db_user = db.query(User).filter(User.id == user_id).first()
+    if db_user is None:
+        raise HTTPException(status_code=404, detail="User not found")
+    return db_user
+
