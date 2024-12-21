@@ -15,8 +15,6 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter()
 
-Base.metadata.create_all(bind=engine)
-
 templates = Jinja2Templates(directory="templates")
 
 class OTPRequest(BaseModel):
