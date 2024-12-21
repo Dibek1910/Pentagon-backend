@@ -1,17 +1,7 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, DateTime, Boolean
+from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, DateTime
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
-
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    is_active = Column(Boolean, default=True)
-    created_at = Column(DateTime, default=datetime.utcnow)
 
 class Customer(Base):
     __tablename__ = "customers"
@@ -29,8 +19,7 @@ class Customer(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
-    accounts = relationship("Account", back_populates="customer", foreign_keys="Account.customer_id")
-    primary_account = relationship("Account", foreign_keys=[primary_account_id])
+    accounts = relationship("Account", back_populates="customer")
 
 class Account(Base):
     __tablename__ = "accounts"
@@ -44,7 +33,7 @@ class Account(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
-    customer = relationship("Customer", back_populates="accounts", foreign_keys=[customer_id])
+    customer = relationship("Customer", back_populates="accounts")
 
 class Document(Base):
     __tablename__ = "documents"

@@ -1,19 +1,23 @@
-from fastapi import APIRouter, HTTPException, Depends, Request  # Add Request to imports
+from fastapi import APIRouter, HTTPException
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import logging
 from typing import Optional
+from database import SessionLocal, engine
+from models import Base, User
 from sqlalchemy.orm import Session
-from app.database import SessionLocal, engine
-from app.models import Base, User, Customer
-from app.services.otp_service import validate_stored_otp
+from .otp_service import validate_stored_otp
 
-# Rest of the code remains the same
+# Add this import
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
 router = APIRouter()
+
+Base.metadata.create_all(bind=engine)
 
 templates = Jinja2Templates(directory="templates")
 
@@ -37,6 +41,7 @@ async def send_otp(request: OTPRequest, db: Session = Depends(get_db)):
     logger.info(f"Sending OTP to mobile number: {request.mobile_number}")
     # Add your OTP sending logic here
     return {"message": "OTP sent successfully"}
+
 
 @router.post("/validate-otp/")
 def validate_otp(request: OTPRequest, otp: str):

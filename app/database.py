@@ -6,20 +6,11 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# Use the DATABASE_URL from environment variables
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:1234@localhost/bank_db")
 
-# If DATABASE_URL is not set, raise an error
-if not DATABASE_URL:
-    raise ValueError("DATABASE_URL environment variable is not set")
-
-# Create the SQLAlchemy engine
 engine = create_engine(DATABASE_URL)
-
-# Create a SessionLocal class
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-# Create a Base class
 Base = declarative_base()
 
 # Dependency for DB session
@@ -29,4 +20,3 @@ def get_db():
         yield db
     finally:
         db.close()
-
