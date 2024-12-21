@@ -1,14 +1,13 @@
-from fastapi import APIRouter, HTTPException
-from fastapi import Depends, FastAPI, Request
+from fastapi import APIRouter, HTTPException, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import logging
 from typing import Optional
-from app.database import SessionLocal, engine  # Updated import
-from app.models import Base, User
 from sqlalchemy.orm import Session
-from app.services.otp_service import validate_stored_otp  # Updated import
+from app.database import SessionLocal, engine
+from app.models import Base, User, Customer
+from app.services.otp_service import validate_stored_otp
 
 # Rest of the code remains the same
 
@@ -72,4 +71,3 @@ async def read_user(user_id: int, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
-
