@@ -19,7 +19,8 @@ class Customer(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
-    accounts = relationship("Account", back_populates="customer")
+    accounts = relationship("Account", back_populates="customer", foreign_keys="Account.customer_id")
+    primary_account = relationship("Account", foreign_keys=[primary_account_id])
 
 class Account(Base):
     __tablename__ = "accounts"
@@ -33,7 +34,7 @@ class Account(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
-    customer = relationship("Customer", back_populates="accounts")
+    customer = relationship("Customer", back_populates="accounts", foreign_keys=[customer_id])
 
 class Document(Base):
     __tablename__ = "documents"
@@ -44,3 +45,4 @@ class Document(Base):
     document_path = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
+

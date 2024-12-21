@@ -15,17 +15,16 @@ def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     
     try:
         db.add(db_customer)
-        db.commit()
-        db.refresh(db_customer)
+        db.flush()  # This will assign an ID to db_customer without committing the transaction
 
         # Create a default account for the customer
         default_account = Account(customer_id=db_customer.id, account_type="Savings")
         db.add(default_account)
-        db.commit()
-        db.refresh(default_account)
+        db.flush()  # This will assign an ID to default_account
 
         # Update the customer with the primary account
         db_customer.primary_account_id = default_account.id
+        
         db.commit()
         db.refresh(db_customer)
 
