@@ -6,5 +6,6 @@ pydantic
 python-dotenv
 python-multipart
 aiofiles
-passlib[bcrypt]
+passlib[bcrypt]==1.7.4
+bcrypt==3.2.0
 pydantic[email]
