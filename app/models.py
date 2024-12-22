@@ -14,6 +14,7 @@ class Customer(Base):
     address = Column(String, nullable=False)
     gender = Column(String, nullable=True)
     dob = Column(Date, nullable=False)
+    password = Column(String, nullable=False)
     primary_account_id = Column(Integer, ForeignKey("accounts.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
