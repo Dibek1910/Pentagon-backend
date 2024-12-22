@@ -1,13 +1,17 @@
-from fastapi import APIRouter, HTTPException, Depends, Request
+from fastapi import APIRouter, HTTPException
+from fastapi import Depends, FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import logging
 from typing import Optional
-from app.database import SessionLocal, engine
-from app.models import Base, User, Customer
+from database import SessionLocal, engine
+from models import Base, User
 from sqlalchemy.orm import Session
-from app.services.otp_service import validate_stored_otp
+from .otp_service import validate_stored_otp
+
+# Add this import
+from fastapi import HTTPException
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +41,7 @@ async def send_otp(request: OTPRequest, db: Session = Depends(get_db)):
     logger.info(f"Sending OTP to mobile number: {request.mobile_number}")
     # Add your OTP sending logic here
     return {"message": "OTP sent successfully"}
+
 
 @router.post("/validate-otp/")
 def validate_otp(request: OTPRequest, otp: str):
