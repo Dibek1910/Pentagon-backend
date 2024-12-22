@@ -3,15 +3,6 @@ from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
 
-class User(Base):
-    __tablename__ = "users"
-
-    id = Column(Integer, primary_key=True, index=True)
-    username = Column(String, unique=True, index=True)
-    email = Column(String, unique=True, index=True)
-    hashed_password = Column(String)
-    created_at = Column(DateTime, default=datetime.utcnow)
-
 class Customer(Base):
     __tablename__ = "customers"
 
@@ -23,7 +14,6 @@ class Customer(Base):
     address = Column(String, nullable=False)
     gender = Column(String, nullable=True)
     dob = Column(Date, nullable=False)
-    password = Column(String, nullable=False)
     primary_account_id = Column(Integer, ForeignKey("accounts.id"))
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
