@@ -5,11 +5,10 @@ import os
 
 app = FastAPI()
 
-# Configure CORS
 origins = [
-    "http://localhost:4200",  # Angular dev server
-    "https://your-production-frontend-domain.com",  # Add your production frontend URL when you have it
-    "*",  # Allow all origins for now (you may want to restrict this in production)
+    "http://localhost:4200",
+    "https://your-production-frontend-domain.com",
+    "*",
 ]
 
 app.add_middleware(
@@ -20,7 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Routers
 app.include_router(auth.router)
 app.include_router(customer.router)
 app.include_router(account.router)
@@ -34,4 +32,4 @@ def root():
 if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
-    uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)
+    uvicorn.run("main:app", host="0.0.0.0", port=port, reload=True)
