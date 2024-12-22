@@ -5,7 +5,7 @@ from pydantic import BaseModel
 import logging
 from typing import Optional
 from app.database import SessionLocal, engine
-from app.models import Base, User
+from app.models import Base, User, Customer
 from sqlalchemy.orm import Session
 from app.services.otp_service import validate_stored_otp
 
