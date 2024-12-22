@@ -5,7 +5,6 @@ import os
 
 app = FastAPI()
 
-# Configure CORS
 origins = [
     "http://localhost:4200",  # Angular dev server
     "https://your-production-frontend-domain.com",  # Add your production frontend URL when you have it
@@ -20,7 +19,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Routers
 app.include_router(auth.router)
 app.include_router(customer.router)
 app.include_router(account.router)

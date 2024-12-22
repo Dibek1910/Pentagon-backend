@@ -2,6 +2,12 @@ from pydantic import BaseModel
 from typing import Optional
 from datetime import date
 
+class AuthResponse(BaseModel):
+    message: str
+    success: bool = True
+    token: str | None = None
+    user: dict | None = None
+
 class CustomerBase(BaseModel):
     first_name: str
     last_name: str
