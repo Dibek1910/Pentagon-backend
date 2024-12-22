@@ -7,7 +7,6 @@ CREATE TABLE customers (
     address VARCHAR(255) NOT NULL,
     gender VARCHAR(15),
     dob DATE NOT NULL,
-    password VARCHAR(255) NOT NULL,
     primary_account_id INTEGER,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP

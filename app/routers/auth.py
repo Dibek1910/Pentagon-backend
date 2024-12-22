@@ -1,9 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models import Customer
-from app.schemas import CustomerResponse
-from app.services.auth_service import verify_password
+from fastapi import APIRouter, HTTPException
 from app.services.otp_service import generate_otp, store_otp, validate_stored_otp
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
@@ -23,13 +18,3 @@ def validate_otp(mobile_number: str, otp: str):
         return {"message": "OTP validated successfully"}
     raise HTTPException(status_code=400, detail="Invalid OTP")
 
-@router.post("/signin/", response_model=CustomerResponse)
-def sign_in(account_id: int, password: str, db: Session = Depends(get_db)):
-    customer = db.query(Customer).filter(Customer.id == account_id).first()
-    if not customer:
-        raise HTTPException(status_code=404, detail="Account not found")
-    
-    if not verify_password(password, customer.password):
-        raise HTTPException(status_code=401, detail="Incorrect password")
-    
-    return customer

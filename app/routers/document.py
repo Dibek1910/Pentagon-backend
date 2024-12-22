@@ -22,3 +22,4 @@ async def upload_document(
     db.commit()
     db.refresh(db_document)
     return {"message": "Document uploaded successfully", "document": db_document}
+

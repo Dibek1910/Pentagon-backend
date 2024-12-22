@@ -21,3 +21,4 @@ def validate_stored_otp(mobile_number: str, otp: str) -> bool:
         del otp_store[mobile_number]
         return True
     return False
+
