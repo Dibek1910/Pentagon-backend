@@ -1,17 +1,13 @@
-from fastapi import APIRouter, HTTPException
-from fastapi import Depends, FastAPI, Request
+from fastapi import APIRouter, HTTPException, Depends, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import logging
 from typing import Optional
-from database import SessionLocal, engine
-from models import Base, User
+from app.database import SessionLocal, engine
+from app.models import Base, User
 from sqlalchemy.orm import Session
-from .otp_service import validate_stored_otp
-
-# Add this import
-from fastapi import HTTPException
+from app.services.otp_service import validate_stored_otp
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +37,6 @@ async def send_otp(request: OTPRequest, db: Session = Depends(get_db)):
     logger.info(f"Sending OTP to mobile number: {request.mobile_number}")
     # Add your OTP sending logic here
     return {"message": "OTP sent successfully"}
-
 
 @router.post("/validate-otp/")
 def validate_otp(request: OTPRequest, otp: str):
@@ -74,4 +69,3 @@ async def read_user(user_id: int, db: Session = Depends(get_db)):
     if db_user is None:
         raise HTTPException(status_code=404, detail="User not found")
     return db_user
-
