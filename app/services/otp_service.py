@@ -4,7 +4,7 @@ from datetime import datetime, timedelta
 otp_store = {}  # In-memory store. In production, use a proper database or cache
 
 def generate_otp():
-    return str(random.randint(1000, 9999))
+    return ''.join([str(random.randint(0, 9)) for _ in range(4)])
 
 def store_otp(mobile_number: str, otp: str):
     expiry = datetime.now() + timedelta(minutes=5)  # OTP valid for 5 minutes
