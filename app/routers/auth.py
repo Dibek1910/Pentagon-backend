@@ -1,31 +1,40 @@
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models import Customer
-from app.schemas import AuthResponse
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, constr
 from app.services.otp_service import generate_otp, store_otp, validate_stored_otp
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
+class OTPRequest(BaseModel):
+    mobile_number: constr(regex="^[0-9]{10}$")
+
+class OTPValidationRequest(BaseModel):
+    mobile_number: constr(regex="^[0-9]{10}$")
+    otp: constr(regex="^[0-9]{4}$")
+
 @router.post("/generate-otp/")
-def generate_otp_for_auth(mobile_number: str) -> AuthResponse:
-    if len(mobile_number) != 10 or not mobile_number.isdigit():
-        raise HTTPException(status_code=400, detail="Invalid mobile number")
-    otp = generate_otp()
-    store_otp(mobile_number, otp)
-    # Here, send OTP using notification service (placeholder)
-    return AuthResponse(message="OTP sent successfully")
+def generate_otp_for_auth(request: OTPRequest):
+    try:
+        otp = generate_otp()
+        store_otp(request.mobile_number, otp)
+        # Here you would typically send the OTP via SMS
+        print(f"Generated OTP for {request.mobile_number}: {otp}")
+        return {
+            "message": "OTP sent successfully",
+            "success": True,
+            "token": None,
+            "user": {}
+        }
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.post("/validate-otp/")
-def validate_otp(mobile_number: str, otp: str) -> AuthResponse:
-    if validate_stored_otp(mobile_number, otp):
-        return AuthResponse(message="OTP validated successfully")
+def validate_otp(request: OTPValidationRequest):
+    if validate_stored_otp(request.mobile_number, request.otp):
+        return {
+            "message": "OTP validated successfully",
+            "success": True,
+            "token": "dummy_token",  # In production, generate a real JWT token
+            "user": {"mobile_number": request.mobile_number}
+        }
     raise HTTPException(status_code=400, detail="Invalid OTP")
-
-@router.post("/signin/")
-def sign_in(account_id: str, password: str, db: Session = Depends(get_db)) -> AuthResponse:
-    customer = db.query(Customer).filter(Customer.id == account_id).first()
-    if not customer or customer.password != password:  # In production, use proper password hashing
-        raise HTTPException(status_code=401, detail="Invalid account ID or password")
-    return AuthResponse(message="Sign in successful", token="dummy_token", user={"id": customer.id})
 
