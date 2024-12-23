@@ -1,15 +1,16 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel, constr
+from pydantic import BaseModel, Field
+from typing import Annotated
 from app.services.otp_service import generate_otp, store_otp, validate_stored_otp
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
 class OTPRequest(BaseModel):
-    mobile_number: constr(regex="^[0-9]{10}$")
+    mobile_number: Annotated[str, Field(pattern="^[0-9]{10}$")]
 
 class OTPValidationRequest(BaseModel):
-    mobile_number: constr(regex="^[0-9]{10}$")
-    otp: constr(regex="^[0-9]{4}$")
+    mobile_number: Annotated[str, Field(pattern="^[0-9]{10}$")]
+    otp: Annotated[str, Field(pattern="^[0-9]{4}$")]
 
 @router.post("/generate-otp/")
 def generate_otp_for_auth(request: OTPRequest):
