@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, ConfigDict
 from typing import Optional
 from datetime import date
 
@@ -27,8 +27,7 @@ class CustomerResponse(CustomerBase):
     id: int
     primary_account_id: Optional[int] = None
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class AccountBase(BaseModel):
     account_type: str
@@ -39,8 +38,7 @@ class AccountResponse(AccountBase):
     id: int
     customer_id: int
 
-    class Config:
-        orm_mode = True
+    model_config = ConfigDict(from_attributes=True)
 
 class DocumentBase(BaseModel):
     document_type: str
