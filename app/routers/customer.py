@@ -3,12 +3,16 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models import Customer, Account
 from app.schemas import CustomerCreate, CustomerResponse
+from passlib.context import CryptContext
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 @router.post("/", response_model=CustomerResponse)
 def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
-    db_customer = Customer(**customer.dict())
+    hashed_password = pwd_context.hash(customer.password)
+    db_customer = Customer(**customer.dict(exclude={"password"}), password=hashed_password)
     db.add(db_customer)
     db.commit()
     db.refresh(db_customer)

@@ -1,24 +1,27 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr
 from typing import Optional
 from datetime import date
 
-class AuthResponse(BaseModel):
-    message: str
-    success: bool = True
-    token: str | None = None
-    user: dict | None = None
-
 class CustomerBase(BaseModel):
     first_name: str
+    middle_name: Optional[str] = None
     last_name: str
     phone_number: str
-    email: Optional[str] = None
-    address: str
-    gender: Optional[str] = None
+    email: EmailStr
+    gender: str
     dob: date
+    current_address: str
+    current_city: str
+    current_state: str
+    current_pincode: str
+    is_permanent_same_as_current: bool
+    permanent_address: str
+    permanent_city: str
+    permanent_state: str
+    permanent_pincode: str
 
 class CustomerCreate(CustomerBase):
-    pass
+    password: str
 
 class CustomerResponse(CustomerBase):
     id: int
@@ -42,3 +45,4 @@ class AccountResponse(AccountBase):
 class DocumentBase(BaseModel):
     document_type: str
     document_path: str
+
