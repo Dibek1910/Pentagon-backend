@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr
+from pydantic import BaseModel
 from typing import Optional
 from datetime import date
 
@@ -7,7 +7,7 @@ class CustomerBase(BaseModel):
     middle_name: Optional[str] = None
     last_name: str
     phone_number: str
-    email: EmailStr
+    email: str
     gender: str
     dob: date
     current_address: str

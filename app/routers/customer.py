@@ -1,3 +1,4 @@
+import re
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.database import get_db
@@ -9,8 +10,14 @@ router = APIRouter(prefix="/customers", tags=["Customers"])
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
+def is_valid_email(email: str) -> bool:
+    email_regex = re.compile(r"[^@]+@[^@]+\.[^@]+")
+    return email_regex.match(email) is not None
+
 @router.post("/", response_model=CustomerResponse)
 def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
+    if not is_valid_email(customer.email):
+        raise HTTPException(status_code=400, detail="Invalid email format")
     hashed_password = pwd_context.hash(customer.password)
     db_customer = Customer(**customer.dict(exclude={"password"}), password=hashed_password)
     db.add(db_customer)
