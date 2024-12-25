@@ -1,39 +1,40 @@
-import re
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy.orm import Session
-from app.database import get_db
-from app.models import Customer, Account
-from app.schemas import CustomerCreate, CustomerResponse
-from passlib.context import CryptContext
+from sqlalchemy import Column, Integer, String, Date, ForeignKey
+from sqlalchemy.orm import relationship
+from app.database import Base
 
-router = APIRouter(prefix="/customers", tags=["Customers"])
+class Customer(Base):
+    __tablename__ = "customers"
 
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+    id = Column(Integer, primary_key=True, index=True)
+    first_name = Column(String, index=True)
+    middle_name = Column(String, nullable=True)
+    last_name = Column(String, index=True)
+    email = Column(String, unique=True, index=True)
+    phone_number = Column(String, unique=True, index=True)
+    gender = Column(String)
+    dob = Column(Date)
+    current_address = Column(String)
+    current_city = Column(String)
+    current_state = Column(String)
+    current_pincode = Column(String)
+    is_permanent_same_as_current = Column(Boolean, default=False)
+    permanent_address = Column(String)
+    permanent_city = Column(String)
+    permanent_state = Column(String)
+    permanent_pincode = Column(String)
+    password = Column(String)
 
-def is_valid_email(email: str) -> bool:
-    email_regex = re.compile(r"[^@]+@[^@]+\.[^@]+")
-    return email_regex.match(email) is not None
+    # Explicitly define the relationship with Account
+    accounts = relationship("Account", back_populates="customer", foreign_keys="Account.customer_id")
 
-@router.post("/", response_model=CustomerResponse)
-def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
-    if not is_valid_email(customer.email):
-        raise HTTPException(status_code=400, detail="Invalid email format")
-    hashed_password = pwd_context.hash(customer.password)
-    db_customer = Customer(**customer.dict(exclude={"password"}), password=hashed_password)
-    db.add(db_customer)
-    db.commit()
-    db.refresh(db_customer)
+class Account(Base):
+    __tablename__ = "accounts"
 
-    # Create a default account for the customer
-    default_account = Account(customer_id=db_customer.id, account_type="Savings")
-    db.add(default_account)
-    db.commit()
-    db.refresh(default_account)
+    id = Column(Integer, primary_key=True, index=True)
+    account_number = Column(String, unique=True, index=True)
+    account_type = Column(String)
+    customer_id = Column(Integer, ForeignKey("customers.id"))
 
-    # Update the customer with the primary account
-    db_customer.primary_account_id = default_account.id
-    db.commit()
-    db.refresh(db_customer)
-
-    return db_customer
+    # Define the back-reference to Customer
+    customer = relationship("Customer", back_populates="accounts")
 
