@@ -24,11 +24,23 @@ class Customer(Base):
     permanent_state = Column(String, nullable=False)
     permanent_pincode = Column(String, nullable=False)
     password = Column(String, nullable=False)
-    primary_account_id = Column(Integer, ForeignKey("accounts.id"))
+    primary_account_id = Column(Integer, ForeignKey("accounts.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
-    accounts = relationship("Account", back_populates="customer")
+    # Specify foreign_keys explicitly for the accounts relationship
+    accounts = relationship(
+        "Account",
+        back_populates="customer",
+        foreign_keys="[Account.customer_id]",
+        primaryjoin="Customer.id==Account.customer_id"
+    )
+    # Add separate relationship for primary account
+    primary_account = relationship(
+        "Account",
+        foreign_keys=[primary_account_id],
+        post_update=True  # This helps prevent circular dependency issues
+    )
 
 class Account(Base):
     __tablename__ = "accounts"
@@ -42,7 +54,12 @@ class Account(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
-    customer = relationship("Customer", back_populates="accounts")
+    # Specify the relationship with explicit foreign key
+    customer = relationship(
+        "Customer", 
+        back_populates="accounts",
+        foreign_keys=[customer_id]
+    )
 
 class Document(Base):
     __tablename__ = "documents"
