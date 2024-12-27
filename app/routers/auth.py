@@ -38,4 +38,3 @@ def validate_otp(request: OTPValidationRequest):
             "user": {"mobile_number": request.mobile_number}
         }
     raise HTTPException(status_code=400, detail="Invalid OTP")
-

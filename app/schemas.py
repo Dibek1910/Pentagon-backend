@@ -43,4 +43,3 @@ class AccountResponse(AccountBase):
 class DocumentBase(BaseModel):
     document_type: str
     document_path: str
-

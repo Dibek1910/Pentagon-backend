@@ -70,4 +70,3 @@ class Document(Base):
     document_path = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
-

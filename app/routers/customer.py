@@ -36,4 +36,3 @@ def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     db.refresh(db_customer)
 
     return db_customer
-
