@@ -7,7 +7,6 @@ from app.models import Customer, Account
 from app.schemas import CustomerCreate, CustomerResponse
 from passlib.context import CryptContext
 import logging
-from app.auth import get_current_user_id  # Assuming you have this function in your auth module
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
 
@@ -46,12 +45,4 @@ def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
         db.rollback()
         logger.error(f"Error creating customer: {str(e)}")
         raise HTTPException(status_code=500, detail="An error occurred while creating the customer")
-
-@router.get("/account-details", response_model=CustomerResponse)
-def get_account_details(db: Session = Depends(get_db)):
-    current_user_id = get_current_user_id()
-    customer = db.query(Customer).filter(Customer.id == current_user_id).first()
-    if not customer:
-        raise HTTPException(status_code=404, detail="Customer not found")
-    return customer
 
