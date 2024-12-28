@@ -2,15 +2,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import auth, customer, account, notification, document
 import os
-import logging
-from sqlalchemy.exc import SQLAlchemyError
-from app.database import engine
 
-app = FastAPI()
-
-# Configure logging
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger(__name__)
+app = FastAPI(title="ABC Bank API", version="1.0.0")
 
 origins = [
     "http://localhost:4200",  # Angular dev server
@@ -25,13 +18,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# Test database connection
-try:
-    with engine.connect() as connection:
-        logger.info("Successfully connected to the database")
-except SQLAlchemyError as e:
-    logger.error(f"Error connecting to the database: {str(e)}")
 
 app.include_router(auth.router)
 app.include_router(customer.router)

@@ -36,3 +36,4 @@ def validate_stored_otp(mobile_number: str, otp: str) -> bool:
     
     print(f"Invalid OTP for {mobile_number}")
     return False
+

@@ -14,4 +14,3 @@ async def save_file(file: UploadFile) -> str:
         await out_file.write(content)  # async write
     
     return file_path
-

@@ -7,3 +7,4 @@ router = APIRouter(prefix="/notifications", tags=["Notifications"])
 def send_notification(mobile_number: str, message: str):
     response = send_sms(mobile_number, message)
     return {"status": "Success", "response": response}
+

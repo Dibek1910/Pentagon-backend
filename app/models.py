@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, ForeignKey, Date, Float, DateTime, Boolean
+from sqlalchemy import Column, BigInteger, Integer, String, ForeignKey, Date, Float, DateTime, Boolean
 from sqlalchemy.orm import relationship
 from app.database import Base
 from datetime import datetime
@@ -6,7 +6,7 @@ from datetime import datetime
 class Customer(Base):
     __tablename__ = "customers"
 
-    id = Column(Integer, primary_key=True, index=True)
+    id = Column(BigInteger, primary_key=True, index=True)
     first_name = Column(String, nullable=False)
     middle_name = Column(String, nullable=True)
     last_name = Column(String, nullable=False)
@@ -28,35 +28,32 @@ class Customer(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
-    # Specify foreign_keys explicitly for the accounts relationship
     accounts = relationship(
         "Account",
         back_populates="customer",
         foreign_keys="[Account.customer_id]",
         primaryjoin="Customer.id==Account.customer_id"
     )
-    # Add separate relationship for primary account
     primary_account = relationship(
         "Account",
         foreign_keys=[primary_account_id],
-        post_update=True  # This helps prevent circular dependency issues
+        post_update=True
     )
 
 class Account(Base):
     __tablename__ = "accounts"
 
     id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
+    customer_id = Column(BigInteger, ForeignKey("customers.id"), nullable=False)
     account_type = Column(String, nullable=False)
     balance = Column(Float, default=0.0)
-    currency = Column(String, default="USD")
+    currency = Column(String, default="INR")
     status = Column(String, default="Active")
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
-    # Specify the relationship with explicit foreign key
     customer = relationship(
-        "Customer", 
+        "Customer",
         back_populates="accounts",
         foreign_keys=[customer_id]
     )
@@ -65,8 +62,11 @@ class Document(Base):
     __tablename__ = "documents"
 
     id = Column(Integer, primary_key=True, index=True)
-    customer_id = Column(Integer, ForeignKey("customers.id"), nullable=False)
+    customer_id = Column(BigInteger, ForeignKey("customers.id"), nullable=False)
     document_type = Column(String, nullable=False)
     document_path = Column(String, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
+
+    customer = relationship("Customer")
+

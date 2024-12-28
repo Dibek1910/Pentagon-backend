@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, EmailStr, Field
 from typing import Optional
 from datetime import date
 
@@ -7,7 +7,7 @@ class CustomerBase(BaseModel):
     middle_name: Optional[str] = None
     last_name: str
     phone_number: str
-    email: str
+    email: EmailStr
     gender: str
     dob: date
     current_address: str
@@ -27,19 +27,47 @@ class CustomerResponse(CustomerBase):
     id: int
     primary_account_id: Optional[int] = None
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        orm_mode = True
 
 class AccountBase(BaseModel):
     account_type: str
-    currency: Optional[str] = "USD"
-    balance: Optional[float] = 0.0
+    currency: str = "INR"
+    balance: float = 0.0
+
+class AccountCreate(AccountBase):
+    customer_id: int
 
 class AccountResponse(AccountBase):
     id: int
     customer_id: int
+    status: str
 
-    model_config = ConfigDict(from_attributes=True)
+    class Config:
+        orm_mode = True
 
 class DocumentBase(BaseModel):
     document_type: str
     document_path: str
+
+class DocumentCreate(DocumentBase):
+    customer_id: int
+
+class DocumentResponse(DocumentBase):
+    id: int
+    customer_id: int
+
+    class Config:
+        orm_mode = True
+
+class OTPRequest(BaseModel):
+    mobile_number: str = Field(..., regex="^[0-9]{10}$")
+
+class OTPValidationRequest(BaseModel):
+    mobile_number: str = Field(..., regex="^[0-9]{10}$")
+    otp: str = Field(..., regex="^[0-9]{4}$")
+
+class SignInRequest(BaseModel):
+    user_id: str
+    password: str
+
