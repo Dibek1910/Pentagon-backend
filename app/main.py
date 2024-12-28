@@ -2,8 +2,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routers import auth, customer, account, notification, document
 import os
+import logging
+from sqlalchemy.exc import SQLAlchemyError
+from app.database import engine
 
 app = FastAPI()
+
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 origins = [
     "http://localhost:4200",  # Angular dev server
@@ -19,6 +26,13 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Test database connection
+try:
+    with engine.connect() as connection:
+        logger.info("Successfully connected to the database")
+except SQLAlchemyError as e:
+    logger.error(f"Error connecting to the database: {str(e)}")
+
 app.include_router(auth.router)
 app.include_router(customer.router)
 app.include_router(account.router)
@@ -33,3 +47,4 @@ if __name__ == "__main__":
     import uvicorn
     port = int(os.environ.get("PORT", 8000))
     uvicorn.run("app.main:app", host="0.0.0.0", port=port, reload=True)
+

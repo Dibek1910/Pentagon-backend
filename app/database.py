@@ -7,6 +7,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:1234@localhost/bank_db")
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -20,3 +22,10 @@ def get_db():
         yield db
     finally:
         db.close()
+
+# Example usage
+# with engine.connect() as connection:
+#     result = connection.execute("SELECT * FROM accounts;")
+#     for row in result:
+#         print(row)
+
