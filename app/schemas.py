@@ -61,11 +61,11 @@ class DocumentResponse(DocumentBase):
         orm_mode = True
 
 class OTPRequest(BaseModel):
-    mobile_number: str = Field(..., regex="^[0-9]{10}$")
+    mobile_number: str = Field(..., pattern="^[0-9]{10}$")
 
 class OTPValidationRequest(BaseModel):
-    mobile_number: str = Field(..., regex="^[0-9]{10}$")
-    otp: str = Field(..., regex="^[0-9]{4}$")
+    mobile_number: str = Field(..., pattern="^[0-9]{10}$")
+    otp: str = Field(..., pattern="^[0-9]{4}$")
 
 class SignInRequest(BaseModel):
     user_id: str
