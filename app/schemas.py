@@ -70,4 +70,3 @@ class OTPValidationRequest(BaseModel):
 class SignInRequest(BaseModel):
     user_id: str
     password: str
-

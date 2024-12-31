@@ -52,9 +52,5 @@ CREATE TABLE IF NOT EXISTS documents (
     FOREIGN KEY (customer_id) REFERENCES customers(id)
 );
 
--- Create alembic_version table for migration tracking
-CREATE TABLE IF NOT EXISTS alembic_version (
-    version_num VARCHAR(32) NOT NULL,
-    CONSTRAINT alembic_version_pkc PRIMARY KEY (version_num)
-);
+ALTER TABLE accounts ALTER COLUMN id SET DEFAULT nextval('accounts_id_seq');
 

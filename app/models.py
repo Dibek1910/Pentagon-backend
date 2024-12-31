@@ -69,4 +69,3 @@ class Document(Base):
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
     customer = relationship("Customer")
-

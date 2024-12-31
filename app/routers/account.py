@@ -35,4 +35,3 @@ def get_account(account_id: int, db: Session = Depends(get_db)):
     if not account:
         raise HTTPException(status_code=404, detail="Account not found")
     return account
-
