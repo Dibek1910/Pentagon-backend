@@ -1,4 +1,3 @@
-import re
 import random
 import logging
 from fastapi import APIRouter, Depends, HTTPException
@@ -8,23 +7,21 @@ from sqlalchemy.exc import IntegrityError
 from app.database import get_db
 from app.models import Customer, Account
 from app.schemas import CustomerCreate, CustomerResponse
+from app.services.email_service import send_personal_details_confirmation, send_account_creation_confirmation
 from passlib.context import CryptContext
 from datetime import datetime
 
 router = APIRouter(prefix="/customers", tags=["Customers"])
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
-# Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 def log_customer_attempt(customer_data: dict):
-    """Log customer creation attempt details"""
     sanitized_data = {k: v for k, v in customer_data.items() if k != 'password'}
     logger.info(f"Attempting to create customer with data: {sanitized_data}")
 
 def verify_database_schema(db: Session):
-    """Verify database schema is correctly set up"""
     inspector = inspect(db.bind)
     tables = inspector.get_table_names()
     logger.info(f"Available tables: {tables}")
@@ -39,17 +36,14 @@ def verify_database_schema(db: Session):
 @router.post("/", response_model=CustomerResponse)
 def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
     try:
-        # Verify database schema
         if not verify_database_schema(db):
             raise HTTPException(
                 status_code=500,
                 detail="Database schema is not properly configured"
             )
 
-        # Log attempt
         log_customer_attempt(customer.dict())
 
-        # Check for existing customer
         existing = db.query(Customer).filter(
             (Customer.phone_number == customer.phone_number) |
             (Customer.email == customer.email)
@@ -63,12 +57,10 @@ def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
                 detail=f"A customer with this {detail} already exists"
             )
 
-        # Generate customer ID
         customer_id = random.randint(10000000000, 99999999999)
         while db.query(Customer).filter(Customer.id == customer_id).first():
             customer_id = random.randint(10000000000, 99999999999)
 
-        # Create customer instance
         try:
             hashed_password = pwd_context.hash(customer.password)
             db_customer = Customer(
@@ -83,27 +75,14 @@ def create_customer(customer: CustomerCreate, db: Session = Depends(get_db)):
             db.flush()
             logger.info("Successfully flushed customer to database")
 
-            # Create default account
-            default_account = Account(
-                customer_id=db_customer.id,
-                account_type="Savings",
-                balance=0.0,
-                currency="INR",
-                status="Active",
-                created_at=datetime.utcnow()
-            )
-            
-            logger.info("Created default account instance")
-            db.add(default_account)
-            db.flush()
-            logger.info("Successfully flushed account to database")
-
-            # Link primary account
-            db_customer.primary_account_id = default_account.id
             db.commit()
             logger.info("Successfully committed transaction")
             
             db.refresh(db_customer)
+
+            # Send email confirmation
+            send_personal_details_confirmation(db_customer.email)
+
             return db_customer
 
         except Exception as e:
@@ -132,3 +111,51 @@ def get_customer(customer_id: int, db: Session = Depends(get_db)):
     if not customer:
         raise HTTPException(status_code=404, detail="Customer not found")
     return customer
+
+@router.post("/{customer_id}/complete-kyc")
+def complete_kyc_verification(customer_id: int, db: Session = Depends(get_db)):
+    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    # Update KYC status
+    customer.is_kyc_verified = True
+    
+    # Generate account if not exists
+    if not customer.primary_account_id:
+        account = Account(
+            customer_id=customer.id,
+            account_type="Savings",
+            balance=0.0,
+            currency="INR",
+            status="Active"
+        )
+        db.add(account)
+        db.flush()
+        customer.primary_account_id = account.id
+    
+    db.commit()
+    db.refresh(customer)
+    
+    # Send account creation email
+    send_account_creation_confirmation(
+        customer.email,
+        customer.id,
+        customer.primary_account_id,
+        "your-password"  # In production, this should be handled securely
+    )
+    
+    return customer
+
+@router.get("/{customer_id}/balance")
+def get_account_balance(customer_id: int, db: Session = Depends(get_db)):
+    customer = db.query(Customer).filter(Customer.id == customer_id).first()
+    if not customer:
+        raise HTTPException(status_code=404, detail="Customer not found")
+    
+    account = db.query(Account).filter(Account.id == customer.primary_account_id).first()
+    if not account:
+        raise HTTPException(status_code=404, detail="Account not found")
+    
+    return account.balance
+

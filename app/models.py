@@ -24,6 +24,7 @@ class Customer(Base):
     permanent_state = Column(String, nullable=False)
     permanent_pincode = Column(String, nullable=False)
     password = Column(String, nullable=False)
+    is_kyc_verified = Column(Boolean, default=False)
     primary_account_id = Column(Integer, ForeignKey("accounts.id"), nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
@@ -69,3 +70,4 @@ class Document(Base):
     updated_at = Column(DateTime, onupdate=datetime.utcnow)
 
     customer = relationship("Customer")
+

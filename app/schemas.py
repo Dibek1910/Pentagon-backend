@@ -26,6 +26,7 @@ class CustomerCreate(CustomerBase):
 class CustomerResponse(CustomerBase):
     id: int
     primary_account_id: Optional[int] = None
+    is_kyc_verified: bool
 
     class Config:
         orm_mode = True
@@ -70,3 +71,4 @@ class OTPValidationRequest(BaseModel):
 class SignInRequest(BaseModel):
     user_id: str
     password: str
+
